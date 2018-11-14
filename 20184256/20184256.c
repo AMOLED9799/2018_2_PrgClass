@@ -1,140 +1,67 @@
 #include <stdio.h>
-#include <string.h>
 
-struct date
-{
-    int year;
-    int month;
-    int day;
-};
-
-struct rep
-{
-    char name [20];
-    struct date day;
-    int gender;
-    char address [30];
-    int phone;
-};
-
-typedef struct rep set;
-
-void swap(set strarr[], int j);
-void printlist(set strarr[]);
-void namesort(set strarr[], int select);
-void birthsort(set strarr[], int select);
-int numbofmember;
-
+void indexAddMat(int [][3], int [][3], int [][3]);
+void ptrProdMat(int [][3], int [][3], int [][3]);
+void printingMatrix(int [][3]);
 
 int main()
 {
+    int matrix[3][3];
+    int resultMatrix[3][3];
     
-    set rep1, rep2, rep3, rep4, rep5, rep6, rep7, rep8, rep9, rep10;
-    struct rep strarr[10] = {rep1, rep2, rep3, rep4, rep5, rep6, rep7, rep8, rep9, rep10};
-    
-    printf("몇 명의 주소를 입력하시겠습니까? : ");
-    scanf("%d",&numbofmember);
-    
-    for (int i=0; i<numbofmember; i++)
+    // 입력
+    printf("3X3 정방행렬의 원소를 입력해주세요\n");
+    for(int i=0; i<9; i++)
     {
-        printf("%d번째 사람의 이름    : ", i+1);              scanf("%s", strarr[i].name);
-        printf("%d번째 사람의 생년월일 (yyyy mm dd) : ", i+1);              scanf("%d %d %d", &strarr[i].day.year, &strarr[i].day.month, &strarr[i].day.day);
-        fflush(stdin);
-        printf("%d번째 사람의 성별 (남 1/ 여 2) : ", i+1);     scanf("%d", &strarr[i].gender);
-        printf("%d번째 사람의 주소 : ", i+1);                 scanf("%s", strarr[i].address);
-        printf("%d번째 사람의 전화번호 : ", i+1);              scanf("%d", &strarr[i].phone);
-        
-        printf("이름     생년월일           성별   주소                       전화번호\n");
-        printf("%-8s%4d년 %2d월 %2d일   %s    %-25s   0%-d\n", strarr[i].name, strarr[i].day.year, strarr[i].day.month, strarr[i].day.day, (strarr[i].gender == 1)? "남" : "여", strarr[i].address, strarr[i].phone);
-        fflush(stdin);
+        printf("[%d][%d] 원소의 값 : ",i/3, i%3);
+        scanf("%d",&matrix[i/3][i%3]);
     }
     
-    // 출력
+    // 연산 + 출력
+    indexAddMat(matrix, matrix, resultMatrix);
     
-    printf("-- origin  --\n");
-    printlist(strarr);
-    
-    printf("\n-- sort by name (down) --\n");
-    namesort(strarr,-1);
-    printlist(strarr);
-    
-    printf("\n-- sort by birth (up) --\n");
-    birthsort(strarr, 1);
-    printlist(strarr);
+    // 연산 + 출력
+    ptrProdMat(matrix, matrix, resultMatrix);
     
     return 0;
 }
 
-// main 종료
 
-void printlist(set strarr[])    // 출력
+void indexAddMat(int mat1[][3], int mat2[][3], int result[][3])
 {
-    printf("이름     생년월일           성별   주소                  전화번호\n");
-    for (int i = 0; i < numbofmember; i++)
+    for(int row=0; row<3; row++)
     {
-        printf("%-8s%4d년 %2d월 %2d일   %s    %30s   0%d\n", strarr[i].name, strarr[i].day.year, strarr[i].day.month, strarr[i].day.day, (strarr[i].gender == 1)? "남" : "여", strarr[i].address, strarr[i].phone);
+        for(int column = 0; column<3; column++)
+            result[row][column] = mat1[row][column] + mat2[row][column];
     }
-}
-
-void swap(set strarr[],int j)   // 바꾸는 함수
-{
-    set address;
     
-    address = strarr[j];
-    strarr[j] = strarr[j-1];
-    strarr[j-1] = address;
+    printingMatrix(result);
 }
 
-void namesort(set strarr[], int select) // 이름으로 정렬 [ select 값으로 오르내림차순 선택가능 ]
+void ptrProdMat(int mat1[][3], int mat2[][3], int result[][3])
 {
-    for(int i = 0; i < numbofmember; i++)
-    {
-        if (select >0)      //오름차순
-        {
-            for(int j = i; j > 0 && ((strcmp(strarr[j-1].name, strarr[j].name) >0)? 1 : 0); j--)
-            {
-                swap(strarr,j);
+    int sum = 0;
+    
+    for(int row=0; row<3; row++) {
+        for(int column = 0; column<3; column++) {
+            for(int k=0; k<3; k++) {
+                sum += *(*(mat1+k)+column) * *(*(mat2 + row)+k);    //곱연산
             }
-        }
-        else                //내림차순
-        {
-            for(int j = i; j > 0 && ((strcmp(strarr[j-1].name, strarr[j].name) <0)? 1 : 0); j--)
-            {
-                swap(strarr,j);
-            }
+            *(*( result + row) + column) = sum;                     //result에 값 넣어주기
+            sum = 0;
         }
     }
+    
+    printingMatrix(result);
 }
 
-
-void birthsort(set strarr[], int select)    // 생년월일로 정렬 [ select 값으로 오르내림차순 선택가능 ]
+void printingMatrix(int resultMatrix[][3])
 {
-    for(int i = 0; i < numbofmember; i++)
+    printf("\n3X3 정방행렬을 출력합니다\n");
+    for(int row=0; row<3; row++)
     {
-        for(int j = i; j>0; j--)
-        {
-            if((select > 0)? strarr[j-1].day.year > strarr[j].day.year : strarr[j-1].day.year < strarr[j].day.year)         // select 값에 따라 오름차순 / 내림차순 결정 : 년
-            {
-                swap(strarr,j);
-                continue;
-            }
-            else if (strarr[j-1].day.year == strarr[j].day.year)
-            {
-                if((select > 0)? strarr[j-1].day.month > strarr[j].day.month : strarr[j-1].day.month < strarr[j].day.month) // 월
-                {
-                    swap(strarr,j);
-                    continue;
-                }
-                
-                else if (strarr[j-1].day.month == strarr[j].day.month)
-                {
-                    if((select > 0)? strarr[j-1].day.day > strarr[j].day.day : strarr[j-1].day.day < strarr[j].day.day)     // 일
-                    {
-                        swap(strarr,j);
-                        continue;
-                    }
-                }
-            }
-        }
+        for(int column=0; column<3; column++)
+            printf("%-5d",resultMatrix[row][column]);
+        printf("\n");
     }
 }
