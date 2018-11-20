@@ -33,16 +33,14 @@ int main()
     printf("입력할 명세서의 개수를 입력하시오 : ");
     scanf("%d",&numbofmember);
     
-    struct rep **strarr;
-    strarr = malloc (sizeof(struct rep *) * numbofmember);
-    
-    for (int i = 0; i < numbofmember; i++)
-    {
-        strarr[i] = malloc(sizeof(struct rep));
-    }
+    struct rep *strarr[10];
     
     printf("명세서 입력 요령 : [NAME YYYY/MM/DD (man or woman) PHONENUMBER]\n");
     
+    for (int i = 0; i < (sizeof(strarr) / sizeof(struct rep *)); i++)
+    {
+        strarr[i] = malloc(sizeof(struct rep));
+    }
     
     for (int i=0; i<numbofmember; i++)
     {
