@@ -1,143 +1,180 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-struct date
-{
-    int year;
-    int month;
-    int day;
+struct node {
+    int value;
+    struct node *next;
 };
 
-struct rep
+struct node * crtnode(int value)                                // 생성한 노드에 넣을 값 파라미터로 입력받기
 {
-    char name [20];
-    struct date day;
-    char gender [10];
-    char address [30];
-    int phone;
-};
+    struct node * current = malloc(sizeof(struct node));
+    current->value = value;
+    current->next = NULL;
+    
+    return current;
+}
 
-typedef struct rep set;
+struct node * appnode(struct node * HEAD, struct node * current) // tail 노드의 next 자리에 current 노드의 주소값을 넣어줄 예정
+{
+    struct node * pointing = HEAD;
+    
+    if(pointing == NULL)
+    {
+        
+        pointing = HEAD;
+        return current;
+    }
+    
+    else
+    {
+        while(pointing->next != NULL)
+            pointing = pointing->next;
+        
+        pointing->next = current;
+    }
+    
+    return HEAD;
+}
 
-void swap(set * strarr[], int j);
-void printlist(set * strarr[]);
-void namesort(set * strarr[], int select);
-void birthsort(set * strarr[], int select);
-int numbofmember;
+int prtnode(struct node * HEAD, int index)         // 맨 앞에서부터 printing, times : 0이면 끝까지, 0이 아니면 그 위치
+{
+    struct node * pointing = HEAD;
+    
+    if(pointing == NULL)
+    {
+        printf("자료없음\n");
+        return 0;
+    }
+    
+    if(index == 0)
+    {
+        int count=0;
+        
+        do    {
+            printf("%d  ",pointing->value);
+            pointing = pointing->next;
+            count++;
+        } while(pointing != NULL);
+        
+        return count;
+    }
+    
+    else
+    {
+        int count=0;
+        do    {
+            pointing = pointing->next;
+            count++;
+        } while(pointing != NULL);
+        
+        pointing = HEAD;
+        for(int i=0; i<count/2; i++)
+        {
+            pointing = pointing->next;
+        }
+        
+        return pointing->value;
+    }
+}
 
+void reverseprtnode(struct node * HEAD, int numbofvalue)
+{
+    for(int i=numbofvalue; i>0; i--)
+    {
+        struct node * pointing = HEAD;
+        
+        for(int j=0; j<i-1; j++)
+        {
+            pointing = pointing->next;
+        }
+        printf("%d  ",pointing->value);
+    }
+    puts("");
+}
+
+struct node * rmvoddnode(struct node * HEAD, int oddoreven)
+{
+    struct node * pointing1 = HEAD;
+    struct node * pointing2 = pointing1->next;
+    struct node * pointing3 = NULL;
+    
+    HEAD = pointing1->next;       //맨 앞은 따로
+    
+    free(pointing1);
+    pointing1 = HEAD;
+    pointing3 = pointing1;
+    
+    while(1)
+    {
+        pointing1 = pointing3;
+        pointing2 = pointing1->next;
+        pointing3 = pointing2->next;
+        
+        free(pointing2);
+        pointing1->next = pointing3;
+        
+        if(pointing3 == NULL || pointing3->next == NULL)
+            break;
+    }
+    
+    if(oddoreven == 1)
+    {
+        
+    }
+    
+    return HEAD;
+}
 
 int main()
 {
+    struct node * HEAD = NULL;
+    struct node * currentnode;
+    int tempvalue;
     
-    printf("입력할 명세서의 개수를 입력하시오 : ");
-    scanf("%d",&numbofmember);
+    printf("정수형 자료를 입력받습니다\n");
     
-    struct rep **strarr;
-    strarr = malloc (sizeof(struct rep *) * numbofmember);
-    
-    for (int i = 0; i < numbofmember; i++)
+    while(1)
     {
-        strarr[i] = malloc(sizeof(struct rep));
-    }
-    
-    printf("명세서 입력 요령 : [NAME YYYY/MM/DD (man or woman) PHONENUMBER]\n");
-    
-    
-    for (int i=0; i<numbofmember; i++)
-    {
-        printf("개별명세 입력 %d :",i+1);
-        scanf("%s %d/%d/%d %s %d", strarr[i]->name,&strarr[i]->day.year, &strarr[i]->day.month, &strarr[i]->day.day, strarr[i]->gender,&strarr[i]->phone);
+        printf("자료 입력 : ");
+        scanf("%d",&tempvalue);
         
-        fflush(stdin);
+        if(getchar() == EOF)
+        {
+            printf("X -- EOF입력\n");
+            break;
+        }
+        
+        currentnode = crtnode(tempvalue);
+        HEAD = appnode(HEAD, currentnode);
     }
     
-    // 출력
     
-    printf("-- origin  --\n");
-    printlist(strarr);
     
-    printf("\n-- sort by name (down) --\n");
-    namesort(strarr,-1);
-    printlist(strarr);
+    // 출력 섹션
+    int count;
+    // 순서대로 출력
+    printf("\n자료를 출력합니다 ********************* \n");
+    printf("입력자료를 순서대로 출력합니다\n");
+    count = prtnode(HEAD,0);
     
-    printf("\n-- sort by birth (up) --\n");
-    birthsort(strarr, 1);
-    printlist(strarr);
+    // 입력된 자료의 개수 출력
+    printf("\n자료의 개수는 %d개 입니다\n", count);
     
+    // 중간 위치에 있는 값 출력
+    printf("\n중간 자료의 값은 %d 입니다\n", prtnode(HEAD,1));
+    
+    // 입력자료를 역순으로 출력
+    printf("\n입력받은 자료를 역순으로 출력합니다 ******** \n");
+    reverseprtnode(HEAD, count);
+    
+    // 입력자료 중 홀수번째 자료는 삭제
+    printf("\n홀수번째 자료는 삭제합니다 ************** \n");
+    printf("\n남은 자료를 출력합니다 \n");
+    prtnode(rmvoddnode(HEAD,count%2),0);
+    
+    printf("\n프로그램 종료 \n");
     return 0;
-}
-
-// main 종료
-
-void printlist(set * strarr[])    // 출력
-{
-    printf("이름     생년월일           성별   전화번호\n");
-    for (int i = 0; i < numbofmember; i++)
-    {
-        printf("%-8s%4d년 %2d월 %2d일   %s    0%d\n", strarr[i]->name, strarr[i]->day.year, strarr[i]->day.month, strarr[i]->day.day, (strcmp(strarr[i]->gender,"man") == 0)? "남" : "여",  strarr[i]->phone);
-    }
-}
-
-void swap(set * strarr[],int j)   // 바꾸는 함수
-{
-    set * address;
     
-    address = strarr[j];
-    strarr[j] = strarr[j-1];
-    strarr[j-1] = address;
-}
-
-void namesort(set * strarr[], int select) // 이름으로 정렬 [ select 값으로 오르내림차순 선택가능 ]
-{
-    for(int i = 0; i < numbofmember; i++)
-    {
-        if (select >0)      //오름차순
-        {
-            for(int j = i; j > 0 && ((strcmp(strarr[j-1]->name, strarr[j]->name) >0)? 1 : 0); j--)
-            {
-                swap(strarr,j);
-            }
-        }
-        else                //내림차순
-        {
-            for(int j = i; j > 0 && ((strcmp(strarr[j-1]->name, strarr[j]->name) <0)? 1 : 0); j--)
-            {
-                swap(strarr,j);
-            }
-        }
-    }
-}
-
-
-void birthsort(set * strarr[], int select)    // 생년월일로 정렬 [ select 값으로 오르내림차순 선택가능 ]
-{
-    for(int i = 0; i < numbofmember; i++)
-    {
-        for(int j = i; j>0; j--)
-        {
-            if((select > 0)? strarr[j-1]->day.year > strarr[j]->day.year : strarr[j-1]->day.year < strarr[j]->day.year)         // select 값에 따라 오름차순 / 내림차순 결정 : 년
-            {
-                swap(strarr,j);
-                continue;
-            }
-            else if (strarr[j-1]->day.year == strarr[j]->day.year)
-            {
-                if((select > 0)? strarr[j-1]->day.month > strarr[j]->day.month : strarr[j-1]->day.month < strarr[j]->day.month) // 월
-                {
-                    swap(strarr,j);
-                    continue;
-                }
-                
-                else if (strarr[j-1]->day.month == strarr[j]->day.month)
-                {
-                    if((select > 0)? strarr[j-1]->day.day > strarr[j]->day.day : strarr[j-1]->day.day < strarr[j]->day.day)     // 일
-                    {
-                        swap(strarr,j);
-                        continue;
-                    }
-                }
-            }
-        }
-    }
 }
