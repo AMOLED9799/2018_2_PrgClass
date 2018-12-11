@@ -1,180 +1,167 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-struct node {
-    int value;
-    struct node *next;
-};
+char * File2Str(char * originfilename);
+void CountLine(char * FileStr);
+void CountWord(char * FileStr);
+void CountChar(char * FileStr);
+void changeAlphabet(char * filename1, char * filename2);
 
-struct node * crtnode(int value)                                // 생성한 노드에 넣을 값 파라미터로 입력받기
+int main(int argc, char ** argv)
 {
-    struct node * current = malloc(sizeof(struct node));
-    current->value = value;
-    current->next = NULL;
-    
-    return current;
-}
-
-struct node * appnode(struct node * HEAD, struct node * current) // tail 노드의 next 자리에 current 노드의 주소값을 넣어줄 예정
-{
-    struct node * pointing = HEAD;
-    
-    if(pointing == NULL)
+    if (argc < 1)
     {
-        
-        pointing = HEAD;
-        return current;
-    }
-    
-    else
-    {
-        while(pointing->next != NULL)
-            pointing = pointing->next;
-        
-        pointing->next = current;
-    }
-    
-    return HEAD;
-}
-
-int prtnode(struct node * HEAD, int index)         // 맨 앞에서부터 printing, times : 0이면 끝까지, 0이 아니면 그 위치
-{
-    struct node * pointing = HEAD;
-    
-    if(pointing == NULL)
-    {
-        printf("자료없음\n");
+        printf("잘못된 Argument입력입니다\n");
+        printf("프로그램을 종료합니다\n");
         return 0;
     }
+    // 파일 명 교환 준비
+    char * originfilename = malloc(sizeof(argv[1]) * sizeof(char));         // 원래 파일 명
+    strcpy(originfilename, argv[1]);
+    char * str4filename = strtok(argv[1], ".");
+    strcat(str4filename, ".rev");                                           // 바뀐 파일 명 (.rev)
+    argv[1] = originfilename;
     
-    if(index == 0)
+    char * FileStr = File2Str(originfilename);              // File 을 FileStr에 문자열 형태로 저장
+    
+    // printing
+    
+    printf("받아온 파일 : %s\n\n", argv[1]);
+    CountLine(FileStr);
+    CountWord(FileStr);
+    CountChar(FileStr);
+    
+    changeAlphabet(originfilename, str4filename);
+    printf("\n%s 파일의 대소문자를 바꾸어 %s파일로 저장하였습니다.\n", originfilename, str4filename);
+    
+    return 0;
+}
+
+
+
+char * File2Str(char * originfilename)
+{
+    FILE * fp = fopen(originfilename, "r");                                 // 파일 열고
+    
+    if (fp == NULL)
     {
-        int count=0;
-        
-        do    {
-            printf("%d  ",pointing->value);
-            pointing = pointing->next;
-            count++;
-        } while(pointing != NULL);
-        
-        return count;
+        printf("실패, 종료\n");
+        return NULL;
     }
     
+    fseek(fp, 0, SEEK_END);
+    char * tempfile = (char *) malloc(sizeof(char) * (ftell(fp) + 1));
+    fseek(fp, 0, SEEK_SET);
+    {                                   // Block 내에서 파일 전체를 tempfile 문자열에 넣는 작업을 하여
+        int i = 0;                      // Strtok를 사용할 준비를 한다.
+        while (!(feof(fp)))
+        {
+            tempfile[i++] = fgetc(fp);  // 문자열에 넣어 분리를 시도
+        }
+        tempfile[i] = '\n';             // 마지막에는 NULL
+    }
+    
+    return tempfile;
+}
+
+void CountLine(char * FileStr)
+{
+    int count = 0;
+    int index = 0;
+    
+    while(FileStr[index] != NULL)
+    {
+        if(FileStr[index] == '\n')     // \n 개행문자를 기준으로 세아림
+        {
+            count++;
+        }
+        index++;
+    }
+    
+    printf("Linecount : %d\n",count);
+}
+
+void CountWord(char * FileStr)
+{
+    int count = 0;
+    int index = 0;
+    int set = 1;
+    char tempchar;
+    
+    while((tempchar = FileStr[index]) != NULL)
+    {
+        if((tempchar == '\'') || (((tempchar >= 'A') && (tempchar <= 'Z')) || ( (tempchar >= 'a') && (tempchar <= 'z'))))       // 알파벳 또는 어퍼스트롤피가 나왔을 경우 set
+        {
+            set = 1;
+        }
+        else
+        {
+            if(set == 1)                        // set인 상태에서 알파벳이나 어퍼스트롤피가 나오지 않는 경우 ( 띄어쓰기, 구두점, 개행문자 등의 문장부호 ) -> 숫자는 단어로 고려하지 않았음
+            {
+                set = 0;
+                count ++;
+            }
+        }
+        index ++;
+    }
+    
+    printf("Wordcount : %d\n",count);
+}
+
+void CountChar(char * FileStr)
+{
+    int count = 0;
+    int index = 0;
+    char tempchar;
+    
+    while((tempchar = FileStr[index]) != NULL)
+    {
+        // 개행문자 또는 공백은 character로 읽어들이지 않는다.
+        if(!(tempchar == '\n' || tempchar == ' '))
+        {
+            count++;
+        }
+        index ++;
+    }
+    
+    printf("Charcount : %d\n",count);
+    
+}
+
+void changeAlphabet(char * filename1, char * filename2)
+{
+    FILE * fp;
+    FILE * fp2;
+    
+    fp = fopen(filename1, "r");
+    fp2 = fopen(filename2, "w");
+    
+    if (fp == NULL)
+    {
+        printf("실패, 종료\n");
+        return;
+    }
     else
     {
-        int count=0;
-        do    {
-            pointing = pointing->next;
-            count++;
-        } while(pointing != NULL);
+        char tempcharacter = NULL;
         
-        pointing = HEAD;
-        for(int i=0; i<count/2; i++)
+        while ((tempcharacter = fgetc(fp)) != EOF)
         {
-            pointing = pointing->next;
+            if ('A' <= tempcharacter && 'Z' >= tempcharacter)
+            {
+                fputc(tempcharacter + 32, fp2);
+            }
+            else if ('a' <= tempcharacter && 'z' >= tempcharacter)
+            {
+                fputc(tempcharacter - 32, fp2);
+            }
+            else
+            {
+                fputc(tempcharacter, fp2);
+            }
         }
-        
-        return pointing->value;
-    }
-}
-
-void reverseprtnode(struct node * HEAD, int numbofvalue)
-{
-    for(int i=numbofvalue; i>0; i--)
-    {
-        struct node * pointing = HEAD;
-        
-        for(int j=0; j<i-1; j++)
-        {
-            pointing = pointing->next;
-        }
-        printf("%d  ",pointing->value);
-    }
-    puts("");
-}
-
-struct node * rmvoddnode(struct node * HEAD, int oddoreven)
-{
-    struct node * pointing1 = HEAD;
-    struct node * pointing2 = pointing1->next;
-    struct node * pointing3 = NULL;
-    
-    HEAD = pointing1->next;       //맨 앞은 따로
-    
-    free(pointing1);
-    pointing1 = HEAD;
-    pointing3 = pointing1;
-    
-    while(1)
-    {
-        pointing1 = pointing3;
-        pointing2 = pointing1->next;
-        pointing3 = pointing2->next;
-        
-        free(pointing2);
-        pointing1->next = pointing3;
-        
-        if(pointing3 == NULL || pointing3->next == NULL)
-            break;
     }
     
-    if(oddoreven == 1)
-    {
-        
-    }
-    
-    return HEAD;
-}
-
-int main()
-{
-    struct node * HEAD = NULL;
-    struct node * currentnode;
-    int tempvalue;
-    
-    printf("정수형 자료를 입력받습니다\n");
-    
-    while(1)
-    {
-        printf("자료 입력 : ");
-        scanf("%d",&tempvalue);
-        
-        if(getchar() == EOF)
-        {
-            printf("X -- EOF입력\n");
-            break;
-        }
-        
-        currentnode = crtnode(tempvalue);
-        HEAD = appnode(HEAD, currentnode);
-    }
-    
-    
-    
-    // 출력 섹션
-    int count;
-    // 순서대로 출력
-    printf("\n자료를 출력합니다 ********************* \n");
-    printf("입력자료를 순서대로 출력합니다\n");
-    count = prtnode(HEAD,0);
-    
-    // 입력된 자료의 개수 출력
-    printf("\n자료의 개수는 %d개 입니다\n", count);
-    
-    // 중간 위치에 있는 값 출력
-    printf("\n중간 자료의 값은 %d 입니다\n", prtnode(HEAD,1));
-    
-    // 입력자료를 역순으로 출력
-    printf("\n입력받은 자료를 역순으로 출력합니다 ******** \n");
-    reverseprtnode(HEAD, count);
-    
-    // 입력자료 중 홀수번째 자료는 삭제
-    printf("\n홀수번째 자료는 삭제합니다 ************** \n");
-    printf("\n남은 자료를 출력합니다 \n");
-    prtnode(rmvoddnode(HEAD,count%2),0);
-    
-    printf("\n프로그램 종료 \n");
-    return 0;
-    
+    fclose(fp);
+    fclose(fp2);
 }
